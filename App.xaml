@@ -1,0 +1,10 @@
+﻿<Application x:Class="VRCLogAnalyzer.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:VRCLogAnalyzer"
+             Startup="Application_Startup">
+             <!-- コマンドラインオプションから実行を制御するため、StartupUri="MainWindow.xaml" を削除 -->
+    <Application.Resources>
+         
+    </Application.Resources>
+</Application>
