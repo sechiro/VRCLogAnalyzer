@@ -10,9 +10,10 @@ VRChatのログを解析して、訪れたワールドやその場にいたユ�
 
 - OS: Windows 10 （64bit）
 - SteamからVRChatを起動（Oculusからの起動は未確認）
-- VRChatの起動オプションに「--enable-sdk-log-levels」を追加
+- VRChatの起動オプションに「--enable-sdk-log-levels」を追加（確認中）
   - ユーザー情報とワールドの詳細をログ出力させるためのオプション追加
   - すでにほかのオプションを指定している場合は、半角スペースで区切って追加する。
+  - なくても動くとの情報もあるので、現在、条件確認中です。
 
 ![VRChatプロパティを開く](docs/img/vrcproperty.png "VRChatプロパティ")
 ![オプションに --enable-sdk-log-levels を追加](docs/img/enable-sdk-log-levels.png "VRChatオプション")
