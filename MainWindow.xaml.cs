@@ -49,7 +49,7 @@ namespace VRCLogAnalyzer
 
             //VRCのログの日付の区切りがドットなので、それに揃える
             string queryStartDate = StartDate.Text.Replace("/", ".");
-            string queryEndDate = EndDate.Text.Replace("/", ".");
+            string queryEndDate = EndDate.Text.Replace("/", ".") + " 23:59:59";
 
             string databaseName = "VRCLogAnalyzer.db";
             string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
