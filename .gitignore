@@ -345,3 +345,6 @@ ASALocalRun/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# 作者ローカル環境用のデータ移行スクリプト
+LogAnalyzerMigrator.cs

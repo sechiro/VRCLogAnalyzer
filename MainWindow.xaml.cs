@@ -33,6 +33,7 @@ namespace VRCLogAnalyzer
         public MainWindow()
         {
             InitializeComponent();
+
             //デフォルト表示は、直近1週間
             DateTime today = DateTime.Today;
             StartDate.Text = today.AddDays(-7).ToLongDateString();
@@ -55,6 +56,8 @@ namespace VRCLogAnalyzer
             string databasePath = System.IO.Path.Combine(folderPath, databaseName);
             using (var conn = new SQLiteConnection(databasePath))
             {
+                conn.CreateTable<UserEncounterHistory>();
+                conn.CreateTable<WorldVisitHistory>();
                 _userEnconterHistories = conn.Query<UserEncounterHistory>(
                     "SELECT * FROM UserEncounterHistory WHERE Timestamp BETWEEN ? AND ? ORDER BY Timestamp",
                     queryStartDate,
@@ -172,14 +175,15 @@ namespace VRCLogAnalyzer
         public async void Button_UpdateDb(object sender, RoutedEventArgs e)
         {
             loadingText.Visibility = Visibility.Visible;
-            
+
             await RunUpdateDb();
             loadingText.Visibility = Visibility.Collapsed;
         }
 
-        private Task RunUpdateDb(){
+        private Task RunUpdateDb()
+        {
             var LogAnalyzer = new LogAnalyzer();
-            return Task.Run( () => { LogAnalyzer.UpdateDb(); } );
+            return Task.Run(() => { LogAnalyzer.UpdateDb(); });
         }
 
         public void Button_UpdateView(object sender, RoutedEventArgs e)
