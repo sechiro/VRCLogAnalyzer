@@ -73,7 +73,7 @@
         </StackPanel>
         <StackPanel Grid.Column="1"
                       Grid.RowSpan="2">
-          <Button x:Name="Button"
+          <Button x:Name="SearchButton"
                     Height="58"
                     Width="100"
                     Margin="0 28 0 10"

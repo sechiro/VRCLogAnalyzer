@@ -63,14 +63,14 @@ namespace VRCLogAnalyzer
                 conn.CreateTable<UserEncounterHistory>();
                 conn.CreateTable<WorldVisitHistory>();
 
-                Console.WriteLine(queryUsername);
-                Console.WriteLine(queryWorldname);
+                //Console.WriteLine(queryUsername);
+                //Console.WriteLine(queryWorldname);
 
                 string queryString = "SELECT * FROM UserEncounterHistory WHERE Timestamp BETWEEN ? AND ? ";
                 queryString += " AND DisplayName LIKE ? ";
                 queryString += " AND WorldName LIKE ? ";
                 queryString += "ORDER BY Timestamp;";
-                Console.WriteLine(queryString);
+                //Console.WriteLine(queryString);
 
                 _userEnconterHistories = conn.Query<UserEncounterHistory>(
                     queryString,
