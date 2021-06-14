@@ -79,7 +79,8 @@ namespace VRCLogAnalyzer
                                 JObject json;
                                 try
                                 {
-                                    json = JObject.Parse(groups["rawjson"].Value);
+                                    //steamDetailsが空の場合、JSONのフォーマット違反になるため、もし文字列があれば変換前に削除する
+                                    json = JObject.Parse(groups["rawjson"].Value.Replace("\"steamDetails\":{{}},", ""));
                                 }
                                 catch (Newtonsoft.Json.JsonReaderException)
                                 {
@@ -175,7 +176,7 @@ namespace VRCLogAnalyzer
                         //ユーザー
                         reg = new Regex("(?<timestamp>[0-9.]+ [0-9:]+).+"
                                                 + Regex.Escape("[Behaviour]")
-                                                + " Initialized PlayerAPI \"(?<playername>.+)\" is remote"
+                                                + " Initialized PlayerAPI \"(?<playername>.+)\" is (remote|local)"
                                             );
                         mc = reg.Matches(line);
                         if (mc.Count > 0)
@@ -196,8 +197,14 @@ namespace VRCLogAnalyzer
                             string bio = "";
                             try
                             {
-                                JObject current_cache = userCache[displayName];
-                                bio = current_cache["bio"].ToString();
+                                if (userCache.ContainsKey(displayName))
+                                {
+                                    JObject current_cache = userCache[displayName];
+                                    if (current_cache.ContainsKey("bio"))
+                                    {
+                                        bio = current_cache["bio"].ToString();
+                                    }
+                                }
                             }
                             catch (System.Collections.Generic.KeyNotFoundException)
                             { //情報が取得できなかった場合は空文字のまま
