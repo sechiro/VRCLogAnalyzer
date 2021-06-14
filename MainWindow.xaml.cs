@@ -51,6 +51,10 @@ namespace VRCLogAnalyzer
             string queryStartDate = StartDate.Text.Replace("/", ".");
             string queryEndDate = EndDate.Text.Replace("/", ".") + " 23:59:59";
 
+            //LIKE句で部分一致させる
+            string queryUsername = '%' + QueryUsername.Text + '%';
+            string queryWorldname = '%' + QueryWorldname.Text + '%';
+
             string databaseName = "VRCLogAnalyzer.db";
             string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             string databasePath = System.IO.Path.Combine(folderPath, databaseName);
@@ -58,10 +62,22 @@ namespace VRCLogAnalyzer
             {
                 conn.CreateTable<UserEncounterHistory>();
                 conn.CreateTable<WorldVisitHistory>();
+
+                Console.WriteLine(queryUsername);
+                Console.WriteLine(queryWorldname);
+
+                string queryString = "SELECT * FROM UserEncounterHistory WHERE Timestamp BETWEEN ? AND ? ";
+                queryString += " AND DisplayName LIKE ? ";
+                queryString += " AND WorldName LIKE ? ";
+                queryString += "ORDER BY Timestamp;";
+                Console.WriteLine(queryString);
+
                 _userEnconterHistories = conn.Query<UserEncounterHistory>(
-                    "SELECT * FROM UserEncounterHistory WHERE Timestamp BETWEEN ? AND ? ORDER BY Timestamp",
+                    queryString,
                     queryStartDate,
-                    queryEndDate
+                    queryEndDate,
+                    queryUsername,
+                    queryWorldname
                 );
             }
 
