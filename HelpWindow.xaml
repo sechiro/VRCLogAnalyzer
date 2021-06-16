@@ -1,0 +1,37 @@
+<Window x:Class="VRCLogAnalyzer.HelpWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VRCLogAnalyzer"
+        mc:Ignorable="d"
+        Title="はじめて利用される方へ"
+        Height="440"
+        Width="400"
+        WindowStartupLocation="CenterOwner"
+        Background="{x:Static SystemColors.ControlLightBrush}">
+  <Grid>
+    <StackPanel>
+        <TextBlock Margin="10" Width="360" TextWrapping="Wrap">
+            VRCLogAnalyzerをご利用いただき、ありがとうございます！<LineBreak /><LineBreak />
+            このアプリは、VRChatのログを解析して、巡ったワールドや出会ったユーザーを記録していくことができます。<LineBreak /><LineBreak />
+            初めて利用する場合は、最初に左上の「設定」メニューから「データ更新」をクリックしてください。<LineBreak />
+            （ログ取り込みが行われるので、少し時間がかかります。コーヒーでも淹れてゆっくりお待ちください。<LineBreak /><LineBreak />
+            
+            利用を継続する場合は、タスクスケジューラなどで1日1回以上の頻度で自動ログ取り込みを行ってください。<LineBreak /><LineBreak />
+            タスクスケジューラから起動する場合は、「VRCLogAnalyzer /analyze」とオプション付きで、このアプリを起動するように設定すると、ウィンドウを開かず、データ更新ができます。
+            <LineBreak /><LineBreak />
+            使ってみた感想は、 Twitter: @sechiro_vrc までお寄せいただけるとうれしいです。<LineBreak /><LineBreak />
+
+            よきVRChatライフを！<LineBreak />
+
+        </TextBlock>
+      
+      <Button x:Name="OK"
+              Click="Button_Click_OK"
+              Content="OK"
+              Width="80"
+              Height="30" />
+    </StackPanel>
+  </Grid>
+</Window>

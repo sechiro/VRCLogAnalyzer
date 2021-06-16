@@ -18,6 +18,7 @@ using System.IO;
 using System.Data;
 using SQLite;
 using System.Collections.ObjectModel;
+using Microsoft.Win32;
 
 
 namespace VRCLogAnalyzer
@@ -28,7 +29,10 @@ namespace VRCLogAnalyzer
     public partial class MainWindow : Window
     {
         private List<UserEncounterHistory> _userEnconterHistories = new List<UserEncounterHistory>();
+        private List<WorldVisitHistory> _worldVisitHistories = new List<WorldVisitHistory>();
         private ObservableCollection<Dto> _dtos = new ObservableCollection<Dto>();
+        private bool _isFirstBoot;
+        private string _databasePath;
 
         public MainWindow()
         {
@@ -38,6 +42,11 @@ namespace VRCLogAnalyzer
             DateTime today = DateTime.Today;
             StartDate.Text = today.AddDays(-7).ToLongDateString();
             EndDate.Text = today.ToLongDateString();
+
+            string databaseName = "VRCLogAnalyzer.db";
+            string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\VRCLogAnalyzer";
+            Directory.CreateDirectory(folderPath);
+            _databasePath = System.IO.Path.Combine(folderPath, databaseName);
 
             updateView();
         }
@@ -52,25 +61,51 @@ namespace VRCLogAnalyzer
             string queryEndDate = EndDate.Text.Replace("/", ".") + " 23:59:59";
 
             //LIKE句で部分一致させる
-            string queryUsername = '%' + QueryUsername.Text + '%';
-            string queryWorldname = '%' + QueryWorldname.Text + '%';
-
-            string databaseName = "VRCLogAnalyzer.db";
-            string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            string databasePath = System.IO.Path.Combine(folderPath, databaseName);
-            using (var conn = new SQLiteConnection(databasePath))
+            //LIKE句でエスケープが必要な特殊文字が含まれていたら、「|」でエスケープ処理する
+            bool needLikeEscape = false;
+            string inputUsername = QueryUsername.Text;
+            string inputWorldName = QueryWorldname.Text;
+            if (inputUsername.Contains("%") || inputUsername.Contains("_") ||
+                inputWorldName.Contains("%") || inputWorldName.Contains("_"))
             {
-                conn.CreateTable<UserEncounterHistory>();
+                needLikeEscape = true;
+                inputUsername = inputUsername.Replace("%", "|%");
+                inputUsername = inputUsername.Replace("_", "|_");
+                inputWorldName = inputWorldName.Replace("%", "|%");
+                inputWorldName = inputWorldName.Replace("_", "|_");
+            }
+
+            string queryUsername = '%' + inputUsername + '%';
+            string queryWorldname = '%' + inputWorldName + '%';
+
+            CreateTableResult isCreated;
+            using (var conn = new SQLiteConnection(_databasePath))
+            {
+                //初回テーブル作成時はCreated、それ以外はMigratedが返る
+                isCreated = conn.CreateTable<UserEncounterHistory>();
                 conn.CreateTable<WorldVisitHistory>();
 
-                //Console.WriteLine(queryUsername);
+                if (isCreated == CreateTableResult.Created)
+                {
+                    _isFirstBoot = true;
+                }
+                //Console.WriteLine(isCreated);
+                Console.WriteLine(queryUsername);
                 //Console.WriteLine(queryWorldname);
 
                 string queryString = "SELECT * FROM UserEncounterHistory WHERE Timestamp BETWEEN ? AND ? ";
                 queryString += " AND DisplayName LIKE ? ";
+                if (needLikeEscape)
+                {
+                    queryString += " ESCAPE '|' ";
+                }
                 queryString += " AND WorldName LIKE ? ";
+                if (needLikeEscape)
+                {
+                    queryString += " ESCAPE '|' ";
+                }
                 queryString += "ORDER BY Timestamp;";
-                //Console.WriteLine(queryString);
+                Console.WriteLine(queryString);
 
                 _userEnconterHistories = conn.Query<UserEncounterHistory>(
                     queryString,
@@ -94,7 +129,7 @@ namespace VRCLogAnalyzer
 
 
                     List<WorldVisitHistory> worldinfo;
-                    using (var conn = new SQLiteConnection(databasePath))
+                    using (var conn = new SQLiteConnection(_databasePath))
                     {
                         worldinfo = conn.Query<WorldVisitHistory>(
                             "SELECT * FROM WorldVisitHistory WHERE WorldName = ? AND WorldVisitTimestamp = ?",
@@ -111,7 +146,7 @@ namespace VRCLogAnalyzer
                     worldName = u.WorldName;
                     worldVisitTimestamp = u.WorldVisitTimestamp;
                     List<WorldVisitHistory> worldinfo;
-                    using (var conn = new SQLiteConnection(databasePath))
+                    using (var conn = new SQLiteConnection(_databasePath))
                     {
                         worldinfo = conn.Query<WorldVisitHistory>(
                             "SELECT * FROM WorldVisitHistory WHERE WorldName = ? AND WorldVisitTimestamp = ?",
@@ -188,6 +223,10 @@ namespace VRCLogAnalyzer
             public string Desc { get; set; }
             public List<Dto> Dtos { get; set; } = new List<Dto>();
         }
+
+        /**
+        * ボタンクリックに対応したアクション定義
+        */
         public async void Button_UpdateDb(object sender, RoutedEventArgs e)
         {
             loadingText.Visibility = Visibility.Visible;
@@ -205,6 +244,154 @@ namespace VRCLogAnalyzer
         public void Button_UpdateView(object sender, RoutedEventArgs e)
         {
             updateView();
+        }
+        public void Button_FirstHelp(object sender, RoutedEventArgs e)
+        {
+            PopupHelpWindow();
+        }
+        public void Button_Readme(object sender, RoutedEventArgs e)
+        {
+            OpenBrowser("https://github.com/sechiro/VRCLogAnalyzer");
+        }
+        public void Button_Credit(object sender, RoutedEventArgs e)
+        {
+            //いったんダミー
+            CreditWindow creditWin = new CreditWindow();
+            creditWin.Owner = this;
+            creditWin.ShowDialog();
+        }
+        public void Button_ExportUser(object sender, RoutedEventArgs e)
+        {
+            SaveFileDialog fileDialog = new SaveFileDialog();
+            fileDialog.FileName = "user-history.csv";
+            fileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            fileDialog.Filter = "CSVファイル|*.csv|すべてのファイル|*.*";
+            fileDialog.FilterIndex = 0;
+
+            if (fileDialog.ShowDialog() == true)
+            {
+
+                using (var conn = new SQLiteConnection(_databasePath))
+                {
+
+                    string queryString = "SELECT * FROM UserEncounterHistory ";
+                    queryString += "ORDER BY Timestamp;";
+                    Console.WriteLine(queryString);
+
+                    _userEnconterHistories = conn.Query<UserEncounterHistory>(
+                        queryString
+                    );
+                }
+                StringBuilder sb = new StringBuilder();
+
+                //ヘッダ
+                sb.Append("Id").Append(",");
+                sb.Append("Timestamp").Append(",");
+                sb.Append("\"" + "DisplayName" + "\"").Append(",");
+                sb.Append("\"" + "Bio" + "\"").Append(",");
+                sb.Append("\"" + "WorldName" + "\"").Append(",");
+                sb.Append("\"" + "WorldVisitTimestamp" + "\"").Append(Environment.NewLine);
+
+                foreach (UserEncounterHistory u in _userEnconterHistories)
+                {
+                    sb.Append(u.Id).Append(",");
+                    sb.Append(u.Timestamp).Append(",");
+                    sb.Append("\"" + u.DisplayName + "\"").Append(",");
+                    sb.Append("\"" + u.Bio + "\"").Append(",");
+                    sb.Append("\"" + u.WorldName + "\"").Append(",");
+                    sb.Append("\"" + u.WorldVisitTimestamp + "\"").Append(Environment.NewLine);
+                }
+
+                Stream st = fileDialog.OpenFile();
+                StreamWriter sw = new StreamWriter(st, Encoding.GetEncoding("UTF-8"));
+                sw.Write(sb.ToString());
+                sw.Close();
+                st.Close();
+                MessageBox.Show("CSVファイルを出力しました。");
+            }
+
+        }
+        public void Button_ExportWorld(object sender, RoutedEventArgs e)
+        {
+            SaveFileDialog fileDialog = new SaveFileDialog();
+            fileDialog.FileName = "world-history.csv";
+            fileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            fileDialog.Filter = "CSVファイル|*.csv|すべてのファイル|*.*";
+            fileDialog.FilterIndex = 0;
+
+            if (fileDialog.ShowDialog() == true)
+            {
+
+                using (var conn = new SQLiteConnection(_databasePath))
+                {
+
+                    string queryString = "SELECT * FROM WorldVisitHistory ";
+                    queryString += "ORDER BY WorldVisitTimestamp;";
+                    Console.WriteLine(queryString);
+
+                    _worldVisitHistories = conn.Query<WorldVisitHistory>(
+                        queryString
+                    );
+                }
+                StringBuilder sb = new StringBuilder();
+
+                //ヘッダ
+                sb.Append("Id").Append(",");
+                sb.Append("WorldVisitTimestamp").Append(",");
+                sb.Append("\"" + "WorldName" + "\"").Append(",");
+                sb.Append("\"" + "Description" + "\"").Append(",");
+                sb.Append("\"" + "AuthorName" + "\"").Append(",");
+                sb.Append("\"" + "Url" + "\"").Append(",");
+                sb.Append("\"" + "ImageUrl" + "\"").Append(Environment.NewLine);
+
+                foreach (WorldVisitHistory w in _worldVisitHistories)
+                {
+                    sb.Append(w.Id).Append(",");
+                    sb.Append(w.WorldVisitTimestamp).Append(",");
+                    sb.Append("\"" + w.WorldName + "\"").Append(",");
+                    sb.Append("\"" + w.Description + "\"").Append(",");
+                    sb.Append("\"" + w.AuthorName + "\"").Append(",");
+                    sb.Append("\"" + w.Url + "\"").Append(",");
+                    sb.Append("\"" + w.ImageUrl + "\"").Append(Environment.NewLine);
+                }
+
+                Stream st = fileDialog.OpenFile();
+                StreamWriter sw = new StreamWriter(st, Encoding.GetEncoding("UTF-8"));
+                sw.Write(sb.ToString());
+                sw.Close();
+                st.Close();
+                MessageBox.Show("CSVファイルを出力しました。");
+            }
+        }
+        private void Window_ContentRendered(object sender, EventArgs e)
+        {
+            //初回は、データ更新をするよう案内を出す
+            if (_isFirstBoot)
+            {
+                PopupHelpWindow();
+
+            }
+        }
+
+        private void PopupHelpWindow()
+        {
+            HelpWindow helpWin = new HelpWindow();
+            helpWin.Owner = this;
+            helpWin.ShowDialog();
+        }
+        public static void OpenBrowser(string url)
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(url);
+            }
+            catch
+            {
+
+                url = url.Replace("&", "^&");
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
+
+            }
         }
     }
 }

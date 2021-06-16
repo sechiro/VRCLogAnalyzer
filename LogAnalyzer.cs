@@ -16,7 +16,9 @@ namespace VRCLogAnalyzer
         {
 
             string databaseName = "VRCLogAnalyzer.db";
-            string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\VRCLogAnalyzer";
+            Directory.CreateDirectory(folderPath);
+
             string databasePath = System.IO.Path.Combine(folderPath, databaseName);
 
             using (var conn = new SQLiteConnection(databasePath))

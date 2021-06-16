@@ -5,16 +5,32 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:VRCLogAnalyzer"
         mc:Ignorable="d"
-        Title="MainWindow"
+        Title="VRCLogAnalyzer"
         Height="600"
         Width="800"
-        ResizeMode="CanResizeWithGrip">
+        ResizeMode="CanResizeWithGrip"
+        ContentRendered="Window_ContentRendered">
   <Grid>
     <DockPanel Grid.ColumnSpan="2">
       <Menu DockPanel.Dock="Top">
         <MenuItem Header="設定(_S)">
           <MenuItem Header="データ更新(_U)"
                     Click="Button_UpdateDb" />
+        </MenuItem>
+        <MenuItem Header="エクスポート(_E)">
+          <MenuItem Header="ユーザーデータ(_U)"
+                    Click="Button_ExportUser" />
+          <MenuItem Header="ワールドデータ(_U)"
+                    Click="Button_ExportWorld" />
+        </MenuItem>
+        <MenuItem Header="ヘルプ(_H)">
+          <MenuItem Header="はじめて利用される方へ(_U)"
+                    Click="Button_FirstHelp" />
+          <MenuItem Header="README(_R)※ブラウザが開きます"
+                    Click="Button_Readme" />
+          <Separator />
+          <MenuItem Header="クレジット(_C)"
+                    Click="Button_Credit" />
         </MenuItem>
       </Menu>
     </DockPanel>
@@ -70,10 +86,10 @@
                      Height="24"
                      Width="120" />　
           </StackPanel>
-        </StackPanel>
-        <StackPanel Grid.Column="1"
+          </StackPanel>
+          <StackPanel Grid.Column="1"
                       Grid.RowSpan="2">
-          <Button x:Name="SearchButton"
+            <Button x:Name="SearchButton"
                     Height="58"
                     Width="100"
                     Margin="0 28 0 10"
@@ -81,31 +97,31 @@
                     HorizontalContentAlignment="Center"
                     Content="検索"
                     Click="Button_UpdateView" />
-        </StackPanel>
-      </Grid>
-      <TextBlock x:Name="loadingText"
-                  Grid.Row="1"
-                  Grid.ColumnSpan="2"
-                  TextWrapping="Wrap"
-                  Text="ログデータ解析中です。しばらくお待ちください。"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Center"
-                  FontSize="24"
-                  Visibility="Collapsed" />
-      <ScrollViewer VerticalScrollBarVisibility="Auto"
-                    CanContentScroll="True">
-        <TreeView x:Name="HistoryTree"
-                  Margin="10 0 10 10"
-                  Height="400">
-          <TreeView.ItemTemplate>
-            <HierarchicalDataTemplate DataType="local:Dto"
-                                      ItemsSource="{Binding Dtos}">
-              <TextBlock Text="{Binding Name}"
-                          ToolTip="{Binding Desc}" />
-            </HierarchicalDataTemplate>
-          </TreeView.ItemTemplate>
-        </TreeView>
-      </ScrollViewer>
-    </StackPanel>
-  </Grid>
-</Window>
+          </StackPanel>
+        </Grid>
+        <TextBlock x:Name="loadingText"
+                   Grid.Row="1"
+                   Grid.ColumnSpan="2"
+                   TextWrapping="Wrap"
+                   Text="ログデータ解析中です。しばらくお待ちください。"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="24"
+                   Visibility="Collapsed" />
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      CanContentScroll="True">
+          <TreeView x:Name="HistoryTree"
+                    Margin="10 0 10 10"
+                    Height="400">
+            <TreeView.ItemTemplate>
+              <HierarchicalDataTemplate DataType="local:Dto"
+                                        ItemsSource="{Binding Dtos}">
+                <TextBlock Text="{Binding Name}"
+                           ToolTip="{Binding Desc}" />
+              </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+          </TreeView>
+        </ScrollViewer>
+      </StackPanel>
+    </Grid>
+  </Window>
