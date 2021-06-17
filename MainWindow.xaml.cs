@@ -90,7 +90,7 @@ namespace VRCLogAnalyzer
                     _isFirstBoot = true;
                 }
                 //Console.WriteLine(isCreated);
-                Console.WriteLine(queryUsername);
+                //Console.WriteLine(queryUsername);
                 //Console.WriteLine(queryWorldname);
 
                 string queryString = "SELECT * FROM UserEncounterHistory WHERE Timestamp BETWEEN ? AND ? ";
@@ -105,7 +105,7 @@ namespace VRCLogAnalyzer
                     queryString += " ESCAPE '|' ";
                 }
                 queryString += "ORDER BY Timestamp;";
-                Console.WriteLine(queryString);
+                //Console.WriteLine(queryString);
 
                 _userEnconterHistories = conn.Query<UserEncounterHistory>(
                     queryString,
