@@ -15,6 +15,14 @@ namespace VRCLogAnalyzer
         public string? Url { get; set; }
         public string? RawJson { get; set; }
 
+        public WorldVisitHistory()
+        {
+            //Null非許容のフィールドを空文字で初期化
+            this.WorldName = "";
+            this.WorldVisitTimestamp = "";
+            this.WorldId = "";
+        }
+
         public override string ToString()
         {
             return $"{WorldVisitTimestamp} - {WorldName}";

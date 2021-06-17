@@ -137,7 +137,15 @@ namespace VRCLogAnalyzer
                             worldVisitTimestamp
                         );
                     }
-                    dto = new Dto(worldName, worldVisitTimestamp, worldinfo[0].Description);
+                    if (worldinfo.Count > 0)
+                    {
+                        dto = new Dto(worldName, worldVisitTimestamp, worldinfo[0].Description ?? "");
+                    }
+                    else
+                    {
+                        dto = new Dto(worldName, worldVisitTimestamp, "");
+                    }
+
                     dto.Dtos.Add(new Dto(u));
                 }
                 else if (worldName != u.WorldName || worldVisitTimestamp != u.WorldVisitTimestamp)
@@ -154,7 +162,7 @@ namespace VRCLogAnalyzer
                             worldVisitTimestamp
                         );
                     }
-                    dto = new Dto(worldName, worldVisitTimestamp, worldinfo[0].Description); dto.Dtos.Add(new Dto(u));
+                    dto = new Dto(worldName, worldVisitTimestamp, worldinfo[0].Description ?? ""); dto.Dtos.Add(new Dto(u));
                 }
                 else
                 {
@@ -220,7 +228,7 @@ namespace VRCLogAnalyzer
                 Desc = $"{u.Bio}";
             }
             public string Name { get; set; }
-            public string Desc { get; set; }
+            public string? Desc { get; set; }
             public List<Dto> Dtos { get; set; } = new List<Dto>();
         }
 

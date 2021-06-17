@@ -17,7 +17,7 @@ namespace VRCLogAnalyzer
         public static string GetAppPath()
         {
             string? appPath = System.IO.Path.GetDirectoryName(
-                System.Reflection.Assembly.GetExecutingAssembly().Location);
+                System.AppContext.BaseDirectory);
             if (appPath is null)
             {
                 throw new DirectoryNotFoundException("実行ファイルのパス取得失敗");

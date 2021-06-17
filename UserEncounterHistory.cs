@@ -11,6 +11,14 @@ namespace VRCLogAnalyzer
         public string WorldName { get; set; }
         public string WorldVisitTimestamp { get; set; }
         public string? Bio { get; set; }
+
+        public UserEncounterHistory()
+        {
+            this.Timestamp = "";
+            this.DisplayName = "";
+            this.WorldName = "";
+            this.WorldVisitTimestamp = "";
+        }
         public override string ToString()
         {
             return $"{Timestamp} - {DisplayName}";
