@@ -34,6 +34,7 @@ namespace VRCLogAnalyzer
                     case "/analyze":
                         var LogAnalyzer = new LogAnalyzer();
                         LogAnalyzer.UpdateDb();
+                        Environment.Exit(0);
                         return;
                     //break;
                     default:
