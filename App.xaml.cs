@@ -6,6 +6,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.IO;
+using System.Threading;
+
 
 namespace VRCLogAnalyzer
 {
@@ -34,6 +36,9 @@ namespace VRCLogAnalyzer
                     case "/analyze":
                         var LogAnalyzer = new LogAnalyzer();
                         LogAnalyzer.UpdateDb();
+                        //プロセスが残ってしまうことがあるので、そうならなくなりそうな方法をいろいろ実行
+                        Current.Shutdown();
+                        System.Threading.Thread.Sleep(10000);
                         Environment.Exit(0);
                         return;
                     //break;
