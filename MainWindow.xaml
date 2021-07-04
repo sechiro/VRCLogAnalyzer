@@ -16,6 +16,12 @@
         <MenuItem Header="設定(_S)">
           <MenuItem Header="データ更新(_U)"
                     Click="Button_UpdateDb" />
+          <MenuItem Header="データ保存場所">
+          <MenuItem x:Name="DbPathConfigMyDocuments" Header="マイドキュメント(_M)" IsCheckable="True"
+                    Click="ChangeDbPathConfigToMyDocuments" />
+          <MenuItem x:Name="DbPathConfigAppPath" Header="アプリフォルダ(_A)" IsCheckable="True"
+                    Click="ChangeDbPathConfigToAppPath" />
+                    </MenuItem>
         </MenuItem>
         <MenuItem Header="エクスポート(_E)">
           <MenuItem Header="ユーザーデータ(_U)"
