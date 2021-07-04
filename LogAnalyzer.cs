@@ -6,18 +6,38 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 using SQLite;
-
+using NLog;
+using NLog.Config;
+using System.Windows.Threading;
 
 namespace VRCLogAnalyzer
 {
-    public class LogAnalyzer
+    public class LogAnalyzer : DispatcherObject
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
         public void UpdateDb(string? logDir = null)
         {
 
+            //設定ファイル読み込み
+            string appPath = App.GetAppPath();
+            //string appConfigPath = System.IO.Path.Combine(appPath, "App.config");
+            string? dbPathConfig;
+
+            //設定ファイルは必ず同梱し、ファイルがないパターンはいったん想定外にする
+            dbPathConfig = System.Configuration.ConfigurationManager.AppSettings["DbPathChoice"];
+            logger.Info($"dbPathConfig: {dbPathConfig}");
+
             string databaseName = "VRCLogAnalyzer.db";
-            string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\VRCLogAnalyzer";
-            Directory.CreateDirectory(folderPath);
+            string folderPath = appPath;
+            if (dbPathConfig == "MyDocuments")
+            {
+                folderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\VRCLogAnalyzer";
+                Directory.CreateDirectory(folderPath);
+            }
+            else if (dbPathConfig == "AppPath")
+            {
+                folderPath = appPath;
+            }
 
             string databasePath = System.IO.Path.Combine(folderPath, databaseName);
 
@@ -37,7 +57,7 @@ namespace VRCLogAnalyzer
             {
                 logDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "Low\\VRChat\\VRChat";
             }
-            Console.WriteLine(logDir);
+            logger.Info("VRChat Log Dir: {}", logDir);
             DirectoryInfo dir = new DirectoryInfo(logDir);
             FileInfo[] info = dir.GetFiles("output_log_*.txt").OrderBy(p => p.LastWriteTime).ToArray();
 
@@ -45,10 +65,33 @@ namespace VRCLogAnalyzer
             Dictionary<string, JObject> userCache = new Dictionary<string, JObject>();
             Dictionary<string, JObject> worldCache = new Dictionary<string, JObject>();
 
+            //進捗表示用
+            int fileCount = info.Count();
+            int fileProcessed = 0;
+
+
             foreach (FileInfo f in info)
             {
-                Console.WriteLine(f.Name);
-                Console.WriteLine(f.LastWriteTime);
+                //Console.WriteLine(f.Name);
+                //Console.WriteLine(f.LastWriteTime);
+                logger.Info("Processing: {}, LastWriteTIme: {}", f.Name, f.LastWriteTime);
+
+                //進捗表示
+                try
+                {
+                    this.Dispatcher.Invoke((Action)(() =>
+                    {
+                        var mainWindow = (MainWindow)App.Current.MainWindow;
+                        mainWindow.loadingText.Text = $"ログデータ解析中です。しばらくお待ちください。(処理済:{fileProcessed}/対象ログ:{fileCount})";
+                    }));
+                }
+                catch
+                {
+                    //メインウィンドウが表示されていないコマンドライン等の場合はここに
+                    logger.Info($"コマンドラインでログデータ解析中です。しばらくお待ちください。(処理済:{fileProcessed}/対象ログ:{fileCount})");
+                }
+
+
                 //shift_jis利用のため
                 //Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                 using (FileStream fs = f.Open(FileMode.Open))
@@ -67,6 +110,7 @@ namespace VRCLogAnalyzer
                         MatchCollection mc;
 
                         //JSON
+                        //詳細をシリアライズ済みJSONとして出力している行の処理
                         reg = new Regex("(?<timestamp>[0-9.]+ [0-9:]+).+"
                                         + Regex.Escape("[API]")
                                         + " {(?<rawjson>{.*})}$"
@@ -75,6 +119,7 @@ namespace VRCLogAnalyzer
                         if (mc.Count > 0)
                         {
                             //Console.WriteLine(line);
+                            logger.Debug(line);
                             foreach (Match match in mc)
                             {
                                 GroupCollection groups = match.Groups;
@@ -89,6 +134,17 @@ namespace VRCLogAnalyzer
                                     //不正なJSONは無視する
                                     //自分自身の初期化API呼び出しの際のsteamDetailsのフォーマットがおかしい。
                                     //今回は利用しないデータなので、無視して次の行へ
+                                    logger.Info("不正なJSONデータです。");
+                                    logger.Info(line);
+                                    continue;
+                                }
+                                catch (Exception ex)
+                                {
+                                    //全く解析ができなかった場合は、それを通常のログにその行を出力
+                                    logger.Info("その他のエラーです。");
+                                    logger.Info(line);
+                                    logger.Info($"message: {ex.Message}");
+                                    logger.Info($"{ex.StackTrace}");
                                     continue;
                                 }
 
@@ -109,6 +165,7 @@ namespace VRCLogAnalyzer
                                     userCache[name_raw] = json;
                                 }
                             }
+                            continue;
                         }
 
                         //ワールド
@@ -137,21 +194,33 @@ namespace VRCLogAnalyzer
                             string rawJson = "";
                             try
                             {
-                                JObject current_cache = worldCache[worldName];
-                                worldId = current_cache["id"].ToString();
-                                authorName = current_cache["authorName"].ToString();
-                                authorId = current_cache["authorId"].ToString();
-                                description = current_cache["description"].ToString();
-                                imageUrl = current_cache["imageUrl"].ToString();
-                                url = "https://vrchat.com/home/world/" + worldId;
-                                rawJson = current_cache["raw_json"].ToString();
+                                if (worldCache.ContainsKey(worldName))
+                                {
+                                    JObject current_cache = worldCache[worldName];
+                                    worldId = current_cache["id"].ToString();
+                                    authorName = current_cache["authorName"].ToString();
+                                    authorId = current_cache["authorId"].ToString();
+                                    description = current_cache["description"].ToString();
+                                    imageUrl = current_cache["imageUrl"].ToString();
+                                    url = "https://vrchat.com/home/world/" + worldId;
+                                    rawJson = current_cache["raw_json"].ToString();
+                                }
                             }
                             catch (System.Collections.Generic.KeyNotFoundException)
-                            { //情報が取得できなかった場合は空文字のまま
+                            {
+                                //情報が取得できなかった場合は空文字のまま
+                                logger.Info($"{worldName}の詳細情報はありませんでした。");
+                            }
+                            catch (Exception ex)
+                            {
+                                //情報が取得したが、想定外のエラーの場合はその旨だけログに出す
+                                logger.Info($"{worldName}の詳細情報取得時に不明なエラーが発生しました。");
+                                logger.Info($"message: {ex.Message}");
+                                logger.Info($"{ex.StackTrace}");
                             }
 
                             //worldVisitHistory INSERT
-                            Console.WriteLine("{0},{1},{2},{3},{4},{5},{6},{7},{8}",
+                            logger.Info("WorldVisitHistory: {0},{1},{2},{3},{4},{5},{6},{7},{8}",
                             worldVisitTimestamp, worldName, worldId, authorName, authorId, description, imageUrl, url, rawJson);
                             var ret = conn.Query<WorldVisitHistory>(
                                 "SELECT * FROM WorldVisitHistory WHERE WorldName = ? AND WorldVisitTimestamp = ?",
@@ -171,8 +240,19 @@ namespace VRCLogAnalyzer
                                 newRecord.Url = url;
                                 newRecord.RawJson = rawJson;
 
-                                conn.Insert(newRecord);
+                                try
+                                {
+                                    conn.Insert(newRecord);
+                                }
+                                catch (Exception ex)
+                                {
+                                    //DB登録失敗全般をログに記録
+                                    logger.Info($"データベースの登録に失敗しました。");
+                                    logger.Info($"message: {ex.Message}");
+                                    logger.Info($"{ex.StackTrace}");
+                                }
                             }
+                            continue;
                         }
 
                         //ユーザー
@@ -209,11 +289,20 @@ namespace VRCLogAnalyzer
                                 }
                             }
                             catch (System.Collections.Generic.KeyNotFoundException)
-                            { //情報が取得できなかった場合は空文字のまま
+                            {
+                                //情報が取得できなかった場合は空文字のまま
+                                logger.Info($"{displayName}の詳細情報はありませんでした。");
+                            }
+                            catch (Exception ex)
+                            {
+                                //情報が取得したが、想定外のエラーの場合はその旨だけログに出す
+                                logger.Info($"{displayName}の詳細情報取得時に不明なエラーが発生しました。");
+                                logger.Info($"message: {ex.Message}");
+                                logger.Info($"{ex.StackTrace}");
                             }
 
                             //userEncounterHistory INSERT
-                            Console.WriteLine("{0},{1},{2},{3},{4}",
+                            logger.Info("UserEncounterHistory: {0},{1},{2},{3},{4}",
                             timestamp, displayName, bio, worldVisitTimestamp, worldName);
                             var ret = conn.Query<UserEncounterHistory>(
                                 "SELECT * FROM UserEncounterHistory WHERE Timestamp = ? AND DisplayName = ?",
@@ -229,11 +318,29 @@ namespace VRCLogAnalyzer
                                 newRecord.WorldName = worldName;
                                 newRecord.WorldVisitTimestamp = worldVisitTimestamp;
 
-                                conn.Insert(newRecord);
+                                try
+                                {
+                                    conn.Insert(newRecord);
+                                }
+                                catch (Exception ex)
+                                {
+                                    //DB登録失敗全般をログに記録
+                                    logger.Info($"データベースの登録に失敗しました。");
+                                    logger.Info($"message: {ex.Message}");
+                                    logger.Info($"{ex.StackTrace}");
+                                }
                             }
                         }
-
+                        continue;
                     }
+                }
+
+                //ファイル処理済みカウント
+                fileProcessed += 1;
+                logger.Info($"ログデータ処理状況　処理済:{fileProcessed}/対象ログ:{fileCount})");
+                if (fileProcessed == fileCount)
+                {
+                    logger.Info($"ログデータの処理が完了しました。");
                 }
             }
         }

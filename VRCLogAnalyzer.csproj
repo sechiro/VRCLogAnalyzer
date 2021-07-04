@@ -8,5 +8,7 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1"/>
     <PackageReference Include="sqlite-net-pcl" Version="1.7.335"/>
+    <PackageReference Include="NLog" Version="4.7.10"/>
+    <PackageReference Include="NLog.Config" Version="4.7.10"/>
   </ItemGroup>
 </Project>
