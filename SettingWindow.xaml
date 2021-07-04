@@ -1,0 +1,47 @@
+<Window x:Class="VRCLogAnalyzer.SettingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:VRCLogAnalyzer"
+        mc:Ignorable="d"
+        Title="設定"
+        Height="240"
+        Width="400"
+        WindowStartupLocation="CenterOwner"
+        Background="{x:Static SystemColors.ControlLightBrush}" ContentRendered="Window_ContentRendered"> 
+  <Grid>
+    <Border Padding="10">
+      <StackPanel>
+        <Label Content="データベースファイル保存場所"
+               Margin="0 0 0 10"
+               FontSize="16"
+               FontWeight="Bold" />
+        <RadioButton x:Name="DbPathConfigMyDocuments"
+                     VerticalAlignment="Center"
+                     VerticalContentAlignment="Center"
+                     Content="マイドキュメントのVRCLogAnalyzerフォルダ"
+                     Margin="0 0 0 4"
+                     FontSize="14" />
+        <RadioButton x:Name="DbPathConfigAppPath"
+                     VerticalAlignment="Center"
+                     VerticalContentAlignment="Center"
+                     Content="アプリ実行ファイルと同じフォルダ"
+                     Margin="0 0 0 4"
+                     FontSize="14" />
+        <TextBlock TextWrapping="WrapWithOverflow"
+                   Margin="0 4 0 0"
+                   FontSize="12">
+                     ※データベースファイルの保存場所の変更後、変更前のデータを引き継ぐ場合は変える前のフォルダ
+                      の「VRCLogAnalyzer.db」を変更後のフォルダに移動してください。
+               </TextBlock>
+        <Button x:Name="OK2"
+                Click="Button_Click_OK"
+                Content="OK"
+                Width="80"
+                Height="30"
+                Margin="0 10 0 0" />
+      </StackPanel>
+    </Border>
+  </Grid>
+</Window>

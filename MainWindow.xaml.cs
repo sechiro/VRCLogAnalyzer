@@ -47,13 +47,32 @@ namespace VRCLogAnalyzer
             StartDate.Text = today.AddDays(-7).ToLongDateString();
             EndDate.Text = today.ToLongDateString();
 
+            setDatabasePath();
+            updateView();
+        }
+
+        public void setDatabasePath()
+        {
             //設定ファイル読み込み
             string appPath = App.GetAppPath();
-            _appConfigPath = System.IO.Path.Combine(appPath, "App.config");
-            string? dbPathConfig;
+            _appConfigPath = System.IO.Path.Combine(appPath, "VRCLogAnalyzer.config");
+            string? dbPathConfig = "AppPath";
 
             //設定ファイルは必ず同梱し、ファイルがないパターンはいったん想定外にする
-            dbPathConfig = System.Configuration.ConfigurationManager.AppSettings["DbPathChoice"];
+            //dbPathConfig = System.Configuration.ConfigurationManager.AppSettings["DbPathChoice"];
+            System.Xml.XmlDocument appConfig = new System.Xml.XmlDocument();
+            appConfig.Load(_appConfigPath);
+            foreach (System.Xml.XmlNode n in appConfig["configuration"]["appSettings"])
+            {
+                if (n.Name == "add")
+                {
+                    if (n.Attributes.GetNamedItem("key").Value == "DbPathChoice")
+                    {
+                        dbPathConfig = n.Attributes.GetNamedItem("value").Value;
+                    }
+
+                }
+            }
             logger.Info($"dbPathConfig: {dbPathConfig}");
 
             string folderPath = appPath;
@@ -61,20 +80,13 @@ namespace VRCLogAnalyzer
             {
                 folderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\VRCLogAnalyzer";
                 Directory.CreateDirectory(folderPath);
-                DbPathConfigMyDocuments.IsChecked = true;
-                DbPathConfigAppPath.IsChecked = false;
-
             }
             else if (dbPathConfig == "AppPath")
             {
                 folderPath = appPath;
-                DbPathConfigAppPath.IsChecked = true;
-                DbPathConfigMyDocuments.IsChecked = false;
             }
 
             _databasePath = System.IO.Path.Combine(folderPath, _databaseName);
-
-            updateView();
         }
 
         public void updateView()
@@ -289,10 +301,16 @@ namespace VRCLogAnalyzer
         }
         public void Button_Credit(object sender, RoutedEventArgs e)
         {
-            //いったんダミー
             CreditWindow creditWin = new CreditWindow();
             creditWin.Owner = this;
             creditWin.ShowDialog();
+        }
+        public void Button_Settings(object sender, RoutedEventArgs e)
+        {
+            SettingWindow setttingWin = new SettingWindow();
+            setttingWin.Owner = this;
+            setttingWin.ShowDialog();
+            setDatabasePath();
         }
         public void Button_ExportUser(object sender, RoutedEventArgs e)
         {
@@ -403,7 +421,6 @@ namespace VRCLogAnalyzer
             if (_isFirstBoot)
             {
                 PopupHelpWindow();
-
             }
         }
 
@@ -432,46 +449,6 @@ namespace VRCLogAnalyzer
             base.OnClosed(e);
 
             Application.Current.Shutdown();
-        }
-
-        public void ChangeDbPathConfigToAppPath(object sender, RoutedEventArgs e)
-        {
-            System.Xml.XmlDocument appConfig = new System.Xml.XmlDocument();
-            appConfig.Load(_appConfigPath);
-
-            foreach (System.Xml.XmlNode n in appConfig["configuration"]["appSettings"])
-            {
-                if (n.Name == "add")
-                {
-                    //"key"="Application Name"のとき、"value"を変更する
-                    if (n.Attributes.GetNamedItem("key").Value == "DbPathChoice")
-                        n.Attributes.GetNamedItem("value").Value = "AppPath";
-                }
-            }
-            appConfig.Save(_appConfigPath);
-            DbPathConfigAppPath.IsChecked = true;
-            DbPathConfigMyDocuments.IsChecked = false;
-            _databasePath = System.IO.Path.Combine(App.GetAppPath(), _databaseName);
-        }
-        public void ChangeDbPathConfigToMyDocuments(object sender, RoutedEventArgs e)
-        {
-            System.Xml.XmlDocument appConfig = new System.Xml.XmlDocument();
-            appConfig.Load(_appConfigPath);
-
-            foreach (System.Xml.XmlNode n in appConfig["configuration"]["appSettings"])
-            {
-                if (n.Name == "add")
-                {
-                    //"key"="Application Name"のとき、"value"を変更する
-                    if (n.Attributes.GetNamedItem("key").Value == "DbPathChoice")
-                        n.Attributes.GetNamedItem("value").Value = "MyDocuments";
-                }
-            }
-            appConfig.Save(_appConfigPath);
-            string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\VRCLogAnalyzer";
-            DbPathConfigAppPath.IsChecked = false;
-            DbPathConfigMyDocuments.IsChecked = true;
-            _databasePath = System.IO.Path.Combine(folderPath, _databaseName);
         }
     }
 }

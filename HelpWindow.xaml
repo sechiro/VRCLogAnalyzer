@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:VRCLogAnalyzer"
         mc:Ignorable="d"
         Title="はじめて利用される方へ"
-        Height="440"
+        Height="460"
         Width="400"
         WindowStartupLocation="CenterOwner"
         Background="{x:Static SystemColors.ControlLightBrush}">

@@ -15,16 +15,29 @@ namespace VRCLogAnalyzer
     public class LogAnalyzer : DispatcherObject
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
+        private string _appConfigPath;
+
         public void UpdateDb(string? logDir = null)
         {
 
             //設定ファイル読み込み
             string appPath = App.GetAppPath();
-            //string appConfigPath = System.IO.Path.Combine(appPath, "App.config");
-            string? dbPathConfig;
+            _appConfigPath = System.IO.Path.Combine(appPath, "VRCLogAnalyzer.config");
+            string? dbPathConfig = "AppPath";
 
-            //設定ファイルは必ず同梱し、ファイルがないパターンはいったん想定外にする
-            dbPathConfig = System.Configuration.ConfigurationManager.AppSettings["DbPathChoice"];
+            System.Xml.XmlDocument appConfig = new System.Xml.XmlDocument();
+            appConfig.Load(_appConfigPath);
+            foreach (System.Xml.XmlNode n in appConfig["configuration"]["appSettings"])
+            {
+                if (n.Name == "add")
+                {
+                    if (n.Attributes.GetNamedItem("key").Value == "DbPathChoice")
+                    {
+                        dbPathConfig = n.Attributes.GetNamedItem("value").Value;
+                    }
+
+                }
+            }
             logger.Info($"dbPathConfig: {dbPathConfig}");
 
             string databaseName = "VRCLogAnalyzer.db";
