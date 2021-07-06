@@ -444,13 +444,13 @@ namespace VRCLogAnalyzer
                 Match match = mc[0];
                 groups = match.Groups;
                 copyName = groups["name"].Value;
-                Clipboard.SetData(DataFormats.Text, copyName);
+                Clipboard.SetText(copyName);
                 logger.Info($"Name copied: {copyName}");
                 return;
             }
 
             // ワールド名コピー
-            reg = new Regex("(?<name>.*) "+ Regex.Escape("(Visited at ") + "(?<timestamp>[0-9.]+ [0-9:]+)" + Regex.Escape(")") );
+            reg = new Regex("(?<name>.*) " + Regex.Escape("(Visited at ") + "(?<timestamp>[0-9.]+ [0-9:]+)" + Regex.Escape(")"));
             mc = reg.Matches(nameText);
 
             if (mc.Count > 0)
@@ -458,7 +458,7 @@ namespace VRCLogAnalyzer
                 Match match = mc[0];
                 groups = match.Groups;
                 copyName = groups["name"].Value;
-                Clipboard.SetData(DataFormats.Text, copyName);
+                Clipboard.SetText(copyName);
                 logger.Info($"Name copied: {copyName}");
                 return;
             }
