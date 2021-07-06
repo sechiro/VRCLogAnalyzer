@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Text.RegularExpressions;
 
 using System.IO;
 
@@ -414,6 +415,55 @@ namespace VRCLogAnalyzer
                 st.Close();
                 MessageBox.Show("CSVファイルを出力しました。");
             }
+        }
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var item = (MenuItem)sender;
+            TextBlock parentItem = ((e.Source as MenuItem).Parent as ContextMenu).PlacementTarget as TextBlock;
+            string nameText = parentItem.Text;
+
+            /*
+            * テキストは以下の形式で入っているので、そこからそれぞれの名前だけ切り出す
+            * User:
+            *  Name = $"{u.Timestamp}     {u.DisplayName}";
+            * World:
+            *  Name = $"{worldName} (Visited at {worldVisitTimestamp})";
+            */
+
+            Regex reg;
+            MatchCollection mc;
+            GroupCollection groups;
+            string copyName = "";
+
+            // ユーザー名コピー
+            reg = new Regex("(?<timestamp>[0-9.]+ [0-9:]+)     (?<name>.*)");
+            mc = reg.Matches(nameText);
+
+            if (mc.Count > 0)
+            {
+                Match match = mc[0];
+                groups = match.Groups;
+                copyName = groups["name"].Value;
+                Clipboard.SetData(DataFormats.Text, copyName);
+                logger.Info($"Name copied: {copyName}");
+                return;
+            }
+
+            // ワールド名コピー
+            reg = new Regex("(?<name>.*) "+ Regex.Escape("(Visited at ") + "(?<timestamp>[0-9.]+ [0-9:]+)" + Regex.Escape(")") );
+            mc = reg.Matches(nameText);
+
+            if (mc.Count > 0)
+            {
+                Match match = mc[0];
+                groups = match.Groups;
+                copyName = groups["name"].Value;
+                Clipboard.SetData(DataFormats.Text, copyName);
+                logger.Info($"Name copied: {copyName}");
+                return;
+            }
+
+            Console.WriteLine(parentItem.Text);
         }
         private void Window_ContentRendered(object sender, EventArgs e)
         {

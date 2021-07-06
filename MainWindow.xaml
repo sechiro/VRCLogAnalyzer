@@ -120,7 +120,13 @@
               <HierarchicalDataTemplate DataType="local:Dto"
                                         ItemsSource="{Binding Dtos}">
                 <TextBlock Text="{Binding Name}"
-                           ToolTip="{Binding Desc}" />
+                           ToolTip="{Binding Desc}">
+                  <TextBlock.ContextMenu>
+                    <ContextMenu>
+                      <MenuItem Header="名前をコピー" Click="MenuItem_Click" />
+                    </ContextMenu>
+                  </TextBlock.ContextMenu>
+                </TextBlock>
               </HierarchicalDataTemplate>
             </TreeView.ItemTemplate>
           </TreeView>
