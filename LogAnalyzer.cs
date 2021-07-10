@@ -107,7 +107,7 @@ namespace VRCLogAnalyzer
 
                 //shift_jis利用のため
                 //Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-                using (FileStream fs = f.Open(FileMode.Open))
+                using (FileStream fs = f.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
                     var reader = new StreamReader(fs, Encoding.UTF8);
 
