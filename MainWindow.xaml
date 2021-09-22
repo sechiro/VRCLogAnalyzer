@@ -37,61 +37,62 @@
         </MenuItem>
       </Menu>
     </DockPanel>
-    <StackPanel>
-      <Grid>
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="5*" />
-          <ColumnDefinition Width="4*" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-          <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <StackPanel>
-          <StackPanel Orientation="Horizontal"
-                      Height="40"
-                      Margin="2 20 10 0">
-            <Label x:Name="Label1"
-                   Height="30"
-                   Width="80"
-                   HorizontalContentAlignment="Right"
-                   Content="開始日：" />
-            <DatePicker x:Name="StartDate"
-                        Height="24"
-                        Width="120" />
-            <Label x:Name="Label2"
-                   Height="30"
-                   Width="80"
-                   HorizontalContentAlignment="Right"
-                   Content="終了日：" />
-      　    <DatePicker x:Name="EndDate"
-                        Height="24"
-                        Width="120" />
-          </StackPanel>
-          <StackPanel Orientation="Horizontal"
-                      Height="30"
-                      Margin="2 0 10 4">
-            <Label x:Name="Label3"
-                   Height="24"
-                   Width="80"
-                   HorizontalContentAlignment="Right"
-                   Content="ユーザー名：" />
-            <TextBox x:Name="QueryUsername"
-                     ToolTip="大文字小文字を区別しない部分一致"
+    <DockPanel>
+      <StackPanel DockPanel.Dock="Top">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="430" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
+          <StackPanel>
+            <StackPanel Orientation="Horizontal"
+                        Height="40"
+                        Margin="2 20 10 0">
+              <Label x:Name="Label1"
+                     Height="30"
+                     Width="80"
+                     HorizontalContentAlignment="Right"
+                     Content="開始日：" />
+              <DatePicker x:Name="StartDate"
+                          Height="24"
+                          Width="120" />
+              <Label x:Name="Label2"
+                     Height="30"
+                     Width="80"
+                     HorizontalContentAlignment="Right"
+                     Content="終了日：" />
+              <DatePicker x:Name="EndDate"
+                          Height="24"
+                          Width="120" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal"
+                        Height="30"
+                        Margin="2 0 10 4">
+              <Label x:Name="Label3"
                      Height="24"
-                     Width="120" />
-            <Label x:Name="Label4"
-                   Height="24"
-                   Width="80"
-                   HorizontalContentAlignment="Right"
-                   Content="ワールド名：" />
-            <TextBox x:Name="QueryWorldname"
-                     ToolTip="大文字小文字を区別しない部分一致"
+                     Width="80"
+                     HorizontalContentAlignment="Right"
+                     Content="ユーザー名：" />
+              <TextBox x:Name="QueryUsername"
+                       ToolTip="大文字小文字を区別しない部分一致"
+                       Height="24"
+                       Width="120" />
+              <Label x:Name="Label4"
                      Height="24"
-                     Width="120" />　
+                     Width="80"
+                     HorizontalContentAlignment="Right"
+                     Content="ワールド名：" />
+              <TextBox x:Name="QueryWorldname"
+                       ToolTip="大文字小文字を区別しない部分一致"
+                       Height="24"
+                       Width="120" />
+            </StackPanel>
           </StackPanel>
-          </StackPanel>
-          <StackPanel Grid.Column="1"
-                      Grid.RowSpan="2">
+          <Grid Grid.Column="1"
+                Grid.RowSpan="2">
             <Button x:Name="SearchButton"
                     Height="58"
                     Width="100"
@@ -100,7 +101,7 @@
                     HorizontalContentAlignment="Center"
                     Content="検索"
                     Click="Button_UpdateView" />
-          </StackPanel>
+          </Grid>
         </Grid>
         <TextBlock x:Name="loadingText"
                    Grid.Row="1"
@@ -111,26 +112,23 @@
                    VerticalAlignment="Center"
                    FontSize="24"
                    Visibility="Collapsed" />
-        <ScrollViewer VerticalScrollBarVisibility="Auto"
-                      CanContentScroll="True">
-          <TreeView x:Name="HistoryTree"
-                    Margin="10 0 10 10"
-                    Height="400">
-            <TreeView.ItemTemplate>
-              <HierarchicalDataTemplate DataType="local:Dto"
-                                        ItemsSource="{Binding Dtos}">
-                <TextBlock Text="{Binding Name}"
-                           ToolTip="{Binding Desc}">
-                  <TextBlock.ContextMenu>
-                    <ContextMenu>
-                      <MenuItem Header="名前をコピー" Click="MenuItem_Click" />
-                    </ContextMenu>
-                  </TextBlock.ContextMenu>
-                </TextBlock>
-              </HierarchicalDataTemplate>
-            </TreeView.ItemTemplate>
-          </TreeView>
-        </ScrollViewer>
       </StackPanel>
-    </Grid>
-  </Window>
+      <TreeView x:Name="HistoryTree"
+                Margin="10 0 10 10">
+        <TreeView.ItemTemplate>
+          <HierarchicalDataTemplate DataType="local:Dto"
+                                    ItemsSource="{Binding Dtos}">
+            <TextBlock Text="{Binding Name}"
+                       ToolTip="{Binding Desc}">
+              <TextBlock.ContextMenu>
+                <ContextMenu>
+                  <MenuItem Header="名前をコピー" Click="MenuItem_Click" />
+                </ContextMenu>
+              </TextBlock.ContextMenu>
+            </TextBlock>
+          </HierarchicalDataTemplate>
+        </TreeView.ItemTemplate>
+      </TreeView>
+    </DockPanel>
+  </Grid>
+</Window>
